@@ -16,9 +16,33 @@ module tt_um_example (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-  // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+    // Instantiate the Johnson counter with adaptations
+johnson johnson_counter(
+    .clk(clk),
+    .r(ui_in[0]), // Assuming ui_in[0] is used as reset for the example
+    .out(uo_out)  // Mapping Johnson counter output to uo_out
+);
+
+// Assuming the Johnson counter doesn't need to read inputs or control IOs dynamically
+assign uio_out = 8'bz; // High impedance as we don't use these in this example
+assign uio_oe = 8'b0;  // Disable output (set as input) as we don't use these
+
+endmodule
+
+module johnson (clk, r, out);
+    parameter size=7;
+    input clk;
+    input r;
+    output reg [0:size] out;
+
+    always @ (posedge clk or posedge r) begin
+        if (r)
+            out = 8'b0000_0000;
+        else
+            out = {~out[size], out[0:size-1]};
+    end
+endmodule
+
+  
 
 endmodule
